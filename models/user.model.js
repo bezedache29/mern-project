@@ -47,5 +47,20 @@ userSchema.pre('save', async function (next) {
   next()
 })
 
+// Permet de check le pwd du user avec celui hash en DB lors du login
+userSchema.statics.login = async function(email, password) {
+  const user = await this.findOne({ email })
+  if (user) {
+    const auth = await bcrypt.compare(password, user.password)
+    if (auth) {
+      return user
+    }
+
+    throw Error('incorrect password')
+  }
+
+  throw Error('incorrect email')
+}
+
 const UserModel = mongoose.model('user', userSchema)
 module.exports = UserModel
