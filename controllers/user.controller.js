@@ -1,4 +1,5 @@
 const UserModel = require('../models/user.model')
+const FollowModel = require('../models/follow.model')
 
 // Va servir pour controler que les ids de la DB sont connu
 const ObjectID = require('mongoose').Types.ObjectId
@@ -64,42 +65,6 @@ module.exports.create = async (req, res) => {
     res.status(200).send({ e })
   }
 }
-// exports.create = (req, res) => {
-//   // Validate request
-//   if (!req.body.pseudo) {
-//     return res.status(400).send({
-//       message: "User pseudo can not be empty"
-//     })
-//   }
-//   if (!req.body.email) {
-//     return res.status(400).send({
-//       message: "User email can not be empty"
-//     })
-//   }
-//   if (!req.body.password) {
-//     return res.status(400).send({
-//       message: "User password can not be empty"
-//     })
-//   }
-
-//   // Create User document
-//   const user = new UserModel({
-//     pseudo : req.body.pseudo,
-//     email: req.body.email,
-//     password: req.body.password
-//   })
-
-//   // Save data
-//   user.save()
-//   .then(user => {
-//     res.send(user)
-//   })
-//   .catch(err => {
-//     res.status(500).send({
-//       message: err.message || "Some error occured while creating user"
-//     })
-//   })
-// }
 
 
 // UPDATE
@@ -156,6 +121,57 @@ module.exports.deleteUser = async (req, res) => {
           message: "Error deleting user with id " + req.params.id
         })
       })
+  } catch (err) {
+    return res.status(500).json({ message: err })
+  }
+}
+
+
+// FOLLOW
+module.exports.follow = async (req, res) => {
+  if (!ObjectID.isValid(req.params.id)) {
+    return res.status(400).send('ID unknown : ' + req.params.id)
+  }
+
+  const idToFollow = req.body.idToFollow
+  const idIsFollowing = req.params.id
+
+  try {
+    await FollowModel.create({
+      idToFollow: idToFollow,
+      idIsFollowing: idIsFollowing
+    })
+    res.status(200).send({
+      message: 'Follow OK'
+    })
+  }
+  catch(e) {
+    res.status(500).send({ e })
+  }
+}
+
+// UNFOLLOW
+module.exports.unfollow = async (req, res) => {
+  if (!ObjectID.isValid(req.params.id)) {
+    return res.status(400).send('ID unknown : ' + req.params.id)
+  }
+
+  const idToFollow = req.body.idToFollow
+  const idIsFollowing = req.params.id
+
+  try {
+    FollowModel.findOneAndDelete({
+      idToFollow: idToFollow,
+      idIsFollowing: idIsFollowing,
+    }, (err, docs) => {
+      if (!err) {
+        res.status(200).send({
+          message: 'Unfollow OK'
+        })
+      } else {
+        console.log(err)
+      }
+    })
   } catch (err) {
     return res.status(500).json({ message: err })
   }

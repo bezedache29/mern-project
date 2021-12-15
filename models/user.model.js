@@ -33,15 +33,15 @@ const userSchema = new mongoose.Schema(
       type: String,
       max: 1024
     },
-    followers: {
-      type: [String] // C'est un tableau qui contient des strings
-    },
-    following: {
-      type: [String]
-    },
-    likes: {
-      type: [String]
-    }
+    // followers: {
+    //   type: [String] // C'est un tableau qui contient des strings
+    // },
+    // following: {
+    //   type: [String]
+    // },
+    // likes: {
+    //   type: [String]
+    // }
   },
   {
     timestamps: true
