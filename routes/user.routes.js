@@ -1,10 +1,11 @@
 const router = require('express').Router()
-// const authController = require('../controllers/auth.controller')
+const authController = require('../controllers/auth.controller')
 const userController = require('../controllers/user.controller')
 
 // Auth
 // localhost/api/users/register
-router.post('/register', userController.create)
+router.post('/register', authController.signUp)
+// router.post('/login', authController.signIn)
 
 // user DB
 router.get('/', userController.getAllUsers)

@@ -32,16 +32,7 @@ const userSchema = new mongoose.Schema(
     bio: {
       type: String,
       max: 1024
-    },
-    // followers: {
-    //   type: [String] // C'est un tableau qui contient des strings
-    // },
-    // following: {
-    //   type: [String]
-    // },
-    // likes: {
-    //   type: [String]
-    // }
+    }
   },
   {
     timestamps: true

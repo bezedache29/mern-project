@@ -36,36 +36,6 @@ module.exports.getUser = async (req, res) => {
   }).select('-password')
 }
 
-// STORE
-module.exports.create = async (req, res) => {
-  // Validate request
-  if (!req.body.pseudo) {
-    return res.status(400).send({
-      message: "User pseudo can not be empty"
-    })
-  }
-  if (!req.body.email) {
-    return res.status(400).send({
-      message: "User email can not be empty"
-    })
-  }
-  if (!req.body.password) {
-    return res.status(400).send({
-      message: "User password can not be empty"
-    })
-  }
-
-  const {pseudo, email, password} = req.body
-
-  try {
-    const user = await UserModel.create({pseudo, email, password})
-    res.status(201).json({ user: user._id })
-  }
-  catch(e) {
-    res.status(200).send({ e })
-  }
-}
-
 
 // UPDATE
 module.exports.updateUser = async (req, res) => {
@@ -129,7 +99,7 @@ module.exports.deleteUser = async (req, res) => {
 
 // FOLLOW
 module.exports.follow = async (req, res) => {
-  if (!ObjectID.isValid(req.params.id)) {
+  if ((!ObjectID.isValid(req.params.id)) || (!ObjectID.isValid(req.body.idToFollow))) {
     return res.status(400).send('ID unknown : ' + req.params.id)
   }
 
@@ -137,13 +107,28 @@ module.exports.follow = async (req, res) => {
   const idIsFollowing = req.params.id
 
   try {
-    await FollowModel.create({
+
+    // On va check dans la DB si les 2 ids ne sont pas deja follow
+    const isFollow = await FollowModel.find({
       idToFollow: idToFollow,
       idIsFollowing: idIsFollowing
-    })
-    res.status(200).send({
-      message: 'Follow OK'
-    })
+    }).exec()
+
+    // Si pas deja follow on cré le follow entre les 2 ids
+    if (isFollow.length == 0) {
+      await FollowModel.create({
+        idToFollow: idToFollow,
+        idIsFollowing: idIsFollowing
+      })
+      res.status(200).send({
+        message: 'Follow OK'
+      })
+    } else {
+      res.status(200).send({
+        message: 'Already follow'
+      })
+    }
+    
   }
   catch(e) {
     res.status(500).send({ e })
@@ -152,7 +137,7 @@ module.exports.follow = async (req, res) => {
 
 // UNFOLLOW
 module.exports.unfollow = async (req, res) => {
-  if (!ObjectID.isValid(req.params.id)) {
+  if ((!ObjectID.isValid(req.params.id)) || (!ObjectID.isValid(req.body.idToFollow))) {
     return res.status(400).send('ID unknown : ' + req.params.id)
   }
 
@@ -160,18 +145,28 @@ module.exports.unfollow = async (req, res) => {
   const idIsFollowing = req.params.id
 
   try {
-    FollowModel.findOneAndDelete({
+
+    // On va check dans la DB si les 2 ids sont follow
+    const isFollow = await FollowModel.find({
       idToFollow: idToFollow,
-      idIsFollowing: idIsFollowing,
-    }, (err, docs) => {
-      if (!err) {
-        res.status(200).send({
-          message: 'Unfollow OK'
-        })
-      } else {
-        console.log(err)
-      }
-    })
+      idIsFollowing: idIsFollowing
+    }).exec()
+
+    if (isFollow.length > 0) {
+      FollowModel.findOneAndDelete({
+        idToFollow: idToFollow,
+        idIsFollowing: idIsFollowing,
+      }, (err, docs) => {
+        if (!err) {
+          res.status(200).send({
+            message: 'Unfollow OK'
+          })
+        } else {
+          console.log(err)
+        }
+      })
+    }
+    
   } catch (err) {
     return res.status(500).json({ message: err })
   }
