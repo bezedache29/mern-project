@@ -8,6 +8,6 @@ mongoose
   .then(() => console.log('Connected to MongoDB'))
   .catch((e) => console.log('Failed to connect to MongoDB', e))
 
-const db = mongoose.connection
+// const db = mongoose.connection
 
-module.exports = db
+// module.exports = db
